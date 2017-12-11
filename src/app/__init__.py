@@ -11,10 +11,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 # Database
 db = SQLAlchemy(app)
 
-# Import + Register Blueprints
-# Workflow is as follows:
-# from app.blue import blue as blue
-# app.register_blueprint(blue)
+import base
 
 # Default functionality of rendering index.html
 def render_page():

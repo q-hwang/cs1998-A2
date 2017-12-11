@@ -3,7 +3,7 @@ import unittest
 from datetime import datetime
 from sqlalchemy import inspect
 from flask import Flask, jsonify
-from app import app,db,base
+from app import app,db,controller
 from sqlalchemy.orm import joinedload
 
 class test(unittest.TestCase):
@@ -44,6 +44,14 @@ class test(unittest.TestCase):
     'id'
   ]
 
+  TagsGetColumns = [
+      'board_elements',
+      'name',
+      'created_at',
+      'updated_at',
+      'id'
+  ]
+
   def input_dict_to_args(self, input_dict):
     return '&'.join(['%s=%s' % tup for tup in input_dict.items()])
 
@@ -55,7 +63,8 @@ class test(unittest.TestCase):
     return True
 
   def object_as_dict(self, obj):
-    return {c.key: getattr(obj, c.key) for c in inspect(obj).mapper.column_attrs}
+    return {c.key: getattr(obj, c.key)
+            for c in inspect(obj).mapper.column_attrs}
 
   def commit(self):
     try:
@@ -65,7 +74,9 @@ class test(unittest.TestCase):
       print(e)
 
   def post(self, input_data, modelType):
-    return self.app.post('/kanban/%s?%s' % (modelType, self.input_dict_to_args(input_data)), follow_redirects=False)
+    return self.app.post('/kanban/%s?%s' %
+                         (modelType, self.input_dict_to_args(input_data))
+                         , follow_redirects=False)
 
   def setUp(self):
     self.app = app.test_client()
@@ -74,6 +85,10 @@ class test(unittest.TestCase):
     self.app_context.push()
 
   def tearDown(self):
+    db.session.execute('DELETE FROM relation;')
+    self.commit()
+    db.session.execute('DELETE FROM tags;')
+    self.commit()
     db.session.execute('DELETE FROM elements;')
     self.commit()
     db.session.execute('DELETE FROM boards;')
@@ -92,7 +107,9 @@ class test(unittest.TestCase):
     result = json.loads(self.post(input_data, 'boards').data)
     result_id = int(result['data']['board']['id'])
     input_data = dict(id=result_id)
-    result = json.loads(self.app.delete('/kanban/boards?%s' % self.input_dict_to_args(input_data), follow_redirects=False).data)
+    result = json.loads(self.app.delete('/kanban/boards?%s' %
+                                        self.input_dict_to_args(input_data),
+                                        follow_redirects=False).data)
     assert(result == {'success': True})
 
     boards = json.loads(self.app.get('/kanban/boards').data)['data']['boards']
@@ -140,8 +157,10 @@ class test(unittest.TestCase):
       title='My Awesome Board')
     input_data2 = dict(
       title='My Awesome Board 2')
-    result_id1 = json.loads(self.post(input_data1, 'boards').data)['data']['board']['id']
-    result_id2 = json.loads(self.post(input_data2, 'boards').data)['data']['board']['id']
+    result_id1 = json.loads(self.post(input_data1, 'boards').data)\
+        ['data']['board']['id']
+    result_id2 = json.loads(self.post(input_data2, 'boards').data)\
+        ['data']['board']['id']
     input_data1 = dict(
       board_id=result_id1,
       description='A Todo Task, I should get this done!',
@@ -175,7 +194,8 @@ class test(unittest.TestCase):
 
   def test_get_board(self):
     input_data = dict(title='My Awesome Board')
-    result_id = json.loads(self.post(input_data, 'boards').data)['data']['board']['id']
+    result_id = json.loads(self.post(input_data, 'boards').data)\
+        ['data']['board']['id']
     input_data1 = dict(
       board_id=result_id,
       description='A Todo Task, I should get this done!',
@@ -207,7 +227,8 @@ class test(unittest.TestCase):
 
   def test_advance_element(self):
     input_data = dict(title='My Awesome Board')
-    result_id = json.loads(self.post(input_data, 'boards').data)['data']['board']['id']
+    result_id = json.loads(self.post(input_data, 'boards').data)\
+        ['data']['board']['id']
     input_data1 = dict(
       board_id=result_id,
       description='A Todo Task, I should get this done!',
@@ -226,8 +247,10 @@ class test(unittest.TestCase):
       category='done')
     self.post(input_data1, 'board_elements')
     self.post(input_data2, 'board_elements')
-    result_id2 = json.loads(self.post(input_data3, 'board_elements').data)['data']['board_element']['id']
-    result_id3 = json.loads(self.post(input_data4, 'board_elements').data)['data']['board_element']['id']
+    result_id2 = json.loads(self.post(input_data3, 'board_elements').data)\
+        ['data']['board_element']['id']
+    result_id3 = json.loads(self.post(input_data4, 'board_elements').data)\
+        ['data']['board_element']['id']
     result = json.loads(self.app.get('/kanban/boards').data)
     assert(result['data']['boards'][0]['todo_count'] == 1)
     assert(result['data']['boards'][0]['inprogress_count'] == 2)
@@ -241,6 +264,52 @@ class test(unittest.TestCase):
     assert(result['data']['boards'][0]['todo_count'] == 0)
     assert(result['data']['boards'][0]['inprogress_count'] == 3)
     assert(result['data']['boards'][0]['done_count'] == 1)
+
+  def test_tags(self):
+    input_data = dict(title='My Awesome Board')
+    board_id = \
+    json.loads(self.post(input_data, 'boards').data)['data']['board']['id']
+    input_data = dict(
+      board_id=board_id,
+      description='A Todo Task, I should get this done!',
+      category='inprogress')
+    result_id = \
+    json.loads(self.post(input_data, 'board_elements').data)['data'][
+      'board_element']['id']
+    # create tag
+    result = json.loads(self.post(dict(name='world'), 'tags').data)\
+        ['data']['tag']
+    assert self.is_sub(self.TagsGetColumns, result.keys())
+    tag_id = result['id']
+    # get tags
+    result = json.loads(self.app.get('/kanban/tags').data)['data']['tags']
+    assert self.is_sub(self.TagsGetColumns,result[0].keys())
+
+    # get tag
+    tag = json.loads(self.app.get('/kanban/tags/%s' % tag_id).data)\
+        ['data']['tag']
+    assert self.is_sub(self.TagsGetColumns, tag.keys())
+
+    # add tag to element
+    input_data = dict(tag_id = tag_id,board_element_id=result_id)
+    json.loads(self.post(input_data, 'tags/add').data)
+    tags = json.loads(self.app.get('/kanban/tags').data)['data']['tags']
+    assert(tags[0]['board_elements'][0] == result_id)
+    # get element
+    element = \
+        json.loads(self.app.get('/kanban/board_elements/%s' % result_id).data)\
+            ['data']['board_element']
+    assert(element['tags'][0]['id'] == tag_id)
+
+    # remove tag from element
+    json.loads(self.app.delete('/kanban/tags/add?%s'% \
+                               self.input_dict_to_args(input_data)).data)
+    tags = json.loads(self.app.get('/kanban/tags').data)['data']['tags']
+    assert (len(tags[0]['board_elements']) == 0)
+    element = \
+    json.loads(self.app.get('/kanban/board_elements/%s' % result_id).data)[
+        'data']['board_element']
+    assert (len(element['tags']) == 0)
 
 if __name__ == '__main__':
   unittest.main()
