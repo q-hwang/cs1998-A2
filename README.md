@@ -20,6 +20,7 @@ Original assignment: https://github.com/Cornell-PoBE/A2
 * [System Configuration](#system-configuration)
 * [Functionality](#functionality)
 * [Testing](#testing)
+* [Reference](#reference)
 
 ## System Configuration
 
@@ -251,6 +252,10 @@ As create
   "success": true
 }
 ````
+
+## Testing
+
+The blackbox tests for each API functionality are in test.py
 
 ## References
 
