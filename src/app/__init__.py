@@ -12,6 +12,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 db = SQLAlchemy(app)
 
 import base
+import controller
 
 # Default functionality of rendering index.html
 def render_page():
