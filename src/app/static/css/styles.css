@@ -680,19 +680,20 @@ a:active,a:hover {
     border-left: 5px solid #6c5b7b
 }
 .create-tag{
-    float: left;
-    clear: left;
-    margin-top:100px
+    width: 70%;
+    margin-left: 15%;
+    margin-right: 15%;
 }
 .add-tag-name-input {
     padding: 10px 2px;
-    width: 100%;
 }
 .add-tag-btn{
-    background-color: #355c7d
+    background-color: #355c7d;
+    display: inline-block;
 }
 
 @media (max-width: 425px) {
+
     #boards {
         box-sizing: border-box;
         margin: 0;
@@ -701,15 +702,31 @@ a:active,a:hover {
     }
 
     .task-column {
-        float: left;
+        box-sizing: border-box;
+        margin: 0;
+        padding: 5px;
         width: 100%
     }
+
+    .board-container {
+        display: block;
+    }
+
 } 
 
 @media (min-width: 426px) and (max-width: 991px) {
     #boards {
         width: 70%;
         margin: 10px 15%;
+    }
+
+    .task-column {
+        width: 70%;
+        margin: 10px 15%;
+    }
+
+    .board-container {
+        display: block;
     }
 } 
 
