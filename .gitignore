@@ -6,3 +6,6 @@ node_modules
 npm-debug.log
 results
 secret
+src/app/.DS_Store
+src/app/__init__.pyc
+*.pyc
