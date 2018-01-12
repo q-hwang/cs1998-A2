@@ -89,7 +89,7 @@ def add_tag_to_element():
     return to_json(success = success)
 
 
-@app.route('/kanban/tags/add', methods=['DELETE'])
+@app.route('/kanban/tags/remove', methods=['DELETE'])
 def delete_tag_from_element():
     success = daos.remove_tag_from(request.args)
     return to_json(success = success)
