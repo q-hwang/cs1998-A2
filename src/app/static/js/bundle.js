@@ -5859,6 +5859,11 @@ object-assign
                 })
             }
         },{
+            key: "clearInput",
+            value: function(e) {
+                e.target.value = "";
+            }
+        },{
             key: "handleCreateTag",
             value: function() {
                 var e = this;
@@ -5923,6 +5928,9 @@ object-assign
                     },
                     onKeyDown: function(t) {
                         e.handleTypeTagName(t)
+                    },
+                    onBlur: function(t) {
+                        e.clearInput(t)
                     }
                 }), c.default.createElement("button", {
                     name: "Add Tag",
