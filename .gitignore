@@ -9,3 +9,4 @@ secret
 src/app/.DS_Store
 src/app/__init__.pyc
 *.pyc
+src/migrations/*
