@@ -3,10 +3,12 @@ venv
 *.env
 node_modules
 *.DS_Store
+.DS_Store
 npm-debug.log
 results
 secret
 src/app/.DS_Store
 src/app/__init__.pyc
 *.pyc
+*.xml
 src/migrations/*
